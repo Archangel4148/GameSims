@@ -1,15 +1,14 @@
+from euchre_tools import Player, Team, EuchreDeck
 from playing_card_tools import Card, Deck
 
 
 def main():
-    # Create a deck (pre-shuffled)
-    deck = Deck(standard_deck=True)
+    # Create a Euchre deck (pre-shuffled)
+    deck = EuchreDeck()
 
-    for _ in range(5):
-        print(deck.draw_card())
+    players = [Player("P1", []), Player("P2", []), Player("P3", []), Player("P4", [])]
+    teams = [Team(players[0:2], "Team 1"), Team(players[2:], "Team 2")]
 
-    print("\n=================\n")
-    print(deck)
 
 if __name__ == '__main__':
     main()
