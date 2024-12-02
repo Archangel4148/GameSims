@@ -17,5 +17,6 @@ def main():
     for team in teams:
         print(team)
 
+
 if __name__ == '__main__':
     main()
