@@ -5,8 +5,10 @@ def main():
     # Create a deck (pre-shuffled)
     deck = Deck(standard_deck=True)
 
-    # for _ in range(5):
-    #     print(deck.draw_card())
+    for _ in range(5):
+        print(deck.draw_card())
+
+    print("\n=================\n")
     print(deck)
 
 if __name__ == '__main__':

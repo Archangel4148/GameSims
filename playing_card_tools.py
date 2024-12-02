@@ -68,7 +68,16 @@ class Deck:
 
     def draw_card(self):
         """Draws and returns the top card of the deck"""
-        return self.cards.pop()
+        try:
+            return self.cards.pop()
+        except IndexError:
+            raise IndexError("Trying to draw a card from an empty deck")
+
+    def peek(self):
+        if len(self.cards) > 0:
+            return self.cards[-1]
+        else:
+            return "There aren't any cards in the deck to look at"
 
     def __str__(self):
         return "\n".join([str(card) for card in self.cards])
