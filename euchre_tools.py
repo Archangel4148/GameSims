@@ -8,13 +8,23 @@ class Player:
     name: str = "NO_NAME"
     hand: list[Card] | None = None
 
+    def __post_init__(self):
+        if self.hand is None:
+            self.hand = []
+
+    def __str__(self):
+        return f"{self.name}: {[str(card) for card in self.hand]}"
+
 
 @dataclasses.dataclass
 class Team:
-    def __init__(self, members: list[Player], name: str):
-        self.name = name
-        self.members = members
-        self.score = 0
+    name: str
+    members: list[Player]
+    score = 0
+
+    def __str__(self):
+        return f"{self.name}: {', '.join(map(str, self.members))}"
+
 
 class EuchreDeck(Deck):
     def __init__(self):
@@ -25,3 +35,14 @@ class EuchreDeck(Deck):
             "9H", "10H", "JH", "QH", "KH", "AH"
         ]
         super().__init__(standard_deck=False, deck_list=euchre_deck_list)
+
+    def deal(self, num_cards: int, players: list[Player]):
+        for _ in range(num_cards):
+            for player in players:
+                player.hand.append(self.draw_card())
+
+
+def create_teams(num_teams: int, players: list[Player]):
+    if len(players) > 4:
+        raise ValueError("Too many players (maximum of 4)")
+    return [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
