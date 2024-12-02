@@ -20,7 +20,8 @@ class Player:
 class Team:
     name: str
     members: list[Player]
-    score = 0
+    tricks_taken: int = 0
+    score: int = 0
 
     def __str__(self):
         return f"{self.name}: {', '.join(map(str, self.members))}"

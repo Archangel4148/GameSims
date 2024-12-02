@@ -12,9 +12,9 @@ def main():
     # Deal a hand of five cards to each player
     deck.deal(5, players)
 
-    winner = False
+    game_over = False
 
-    while not winner:
+    while not game_over:
         # Re-deal
         deck.reset()
         deck.deal(5, players)
@@ -33,11 +33,17 @@ def main():
             winner = players[get_winning_card_index(played_cards)]
             for team in teams:
                 if winner in team.members:
-                    team.score += 1
+                    team.tricks_taken += 1
+                    winning_team = team
+                    break
 
-            print(winner.name, "wins!\n")
+            print(winning_team.name, "takes the trick!\n")
 
-        winner = True
+        tricks_taken_by_team = [team.tricks_taken for team in teams]
+        winning_team = teams[tricks_taken_by_team.index(max(tricks_taken_by_team))]
+        winning_team.score += 1
+        if max([team.score for team in teams]) == 10:
+            game_over = True
 
     for team in teams:
         print(team.name, "-", team.score)
