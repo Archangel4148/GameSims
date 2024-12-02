@@ -34,15 +34,19 @@ def main():
             for team in teams:
                 if winner in team.members:
                     team.tricks_taken += 1
-                    winning_team = team
+                    print(team.name, "takes the trick!\n")
                     break
-
-            print(winning_team.name, "takes the trick!\n")
 
         tricks_taken_by_team = [team.tricks_taken for team in teams]
         winning_team = teams[tricks_taken_by_team.index(max(tricks_taken_by_team))]
-        winning_team.score += 1
-        if max([team.score for team in teams]) == 10:
+        if winning_team.tricks_taken == 5:
+            winning_team.score += 2
+            print(f"-- {winning_team.name} gets 2 points ({winning_team.score}) --\n")
+        else:
+            winning_team.score += 1
+            print(f"-- {winning_team.name} gets 1 point ({winning_team.score}) --\n")
+
+        if max([team.score for team in teams]) >= 10:
             game_over = True
 
     for team in teams:
