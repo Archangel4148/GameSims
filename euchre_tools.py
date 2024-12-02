@@ -46,3 +46,9 @@ def create_teams(num_teams: int, players: list[Player]):
     if len(players) > 4:
         raise ValueError("Too many players (maximum of 4)")
     return [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
+
+def get_winning_card_index(played_cards: list[Card]):
+    # For now, just returning the highest value card index
+    value_list = [card.value for card in played_cards]
+
+    return value_list.index(max(value_list))
