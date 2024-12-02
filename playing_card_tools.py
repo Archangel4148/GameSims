@@ -1,3 +1,6 @@
+from random import randint
+
+
 class Card:
     def __init__(self, suit_value: str):
         self.value: int = 0
@@ -5,7 +8,7 @@ class Card:
         self.suit: str = "NO_SUIT"
         self.color: str = "NO_COLOR"
 
-        value_string, suit_string = suit_value[0], suit_value[1]
+        value_string, suit_string = suit_value[:-1], suit_value[-1]
 
         try:
             self.value = int(value_string)
@@ -24,10 +27,48 @@ class Card:
         except ValueError:
             raise ValueError(f"Invalid Suit, \'{suit_string}\'")
 
-    def get_full_card_name(self):
+    def __str__(self):
+        # Return the full card name when printing the Card object
         return f"{self.name} of {self.suit}"
 
 
 class Deck:
-    def __init__(self):
-        self.cards: list[Card]
+    def __init__(self, standard_deck: bool = True, deck_list: list | None = None):
+        self.cards: list[Card] = []
+        self.deck_list: list[str] = []
+
+        if standard_deck:
+            values = ("2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A")
+            suits = ("S", "C", "D", "H")
+
+            # Generate the full deck of 52 cards
+            self.deck_list = [f"{value}{suit}" for value in values for suit in suits]
+        else:
+            self.deck_list = deck_list
+
+        # Fill the deck with cards, and shuffle it to start
+        self.fill(self.deck_list)
+        self.shuffle()
+
+    def fill(self, deck_list: list[str]):
+        self.cards = [Card(s) for s in deck_list]
+
+    def reset(self):
+        """Resets the deck to its original deck list, and reshuffles"""
+        self.fill(self.deck_list)
+        self.shuffle()
+
+    def shuffle(self):
+        """Shuffles the deck using the Fisher-Yates shuffle algorithm"""
+        for i in range(0, len(self.cards) - 1):
+            j = randint(i, len(self.cards) - 1)
+            temp = self.cards[i]
+            self.cards[i] = self.cards[j]
+            self.cards[j] = temp
+
+    def draw_card(self):
+        """Draws and returns the top card of the deck"""
+        return self.cards.pop()
+
+    def __str__(self):
+        return "\n".join([str(card) for card in self.cards])

@@ -1,10 +1,13 @@
-from playing_card_tools import Card
+from playing_card_tools import Card, Deck
+
 
 def main():
-    cards = [Card("KH"), Card("AS"), Card("3C")]
+    # Create a deck (pre-shuffled)
+    deck = Deck(standard_deck=True)
 
-    for card in cards:
-        print(card.get_full_card_name())
+    # for _ in range(5):
+    #     print(deck.draw_card())
+    print(deck)
 
 if __name__ == '__main__':
     main()
