@@ -1,5 +1,6 @@
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play
 
+RUN_COUNT = 1000
 
 def main():
     # Create a Euchre deck (pre-shuffled)
@@ -9,17 +10,17 @@ def main():
     players: list[Player] = [Player(f"P{i + 1}", []) for i in range(4)]
     teams: list[Team] = create_teams(2, players)
 
-    scores = [0] * len(teams)
-    wins = [0] * len(teams)
-    hand_values = [0] * len(players)
-    num_runs = 1000
+    # Tracking averages for post-analysis
+    team_scores = [0] * len(teams)
+    team_wins = [0] * len(teams)
+    player_hand_values = [0] * len(players)
 
-    for _ in range(num_runs):
-
+    for _ in range(RUN_COUNT):
+        # Reset the deck before each game
         deck.reset()
-
         game_over = False
 
+        # Game loop
         while not game_over:
             for team in teams:
                 team.tricks_taken = 0
@@ -82,23 +83,23 @@ def main():
 
         teams_by_score = [team.score for team in teams]
         winner = teams_by_score.index(max(teams_by_score))
-        wins[winner] += 1
+        team_wins[winner] += 1
         for i, team in enumerate(teams):
             # print(team.name, "-", team.score)
-            scores[i] += team.score
+            team_scores[i] += team.score
             team.score = 0
         for i, player in enumerate(players):
-            hand_values[i] += player.hand_value
+            player_hand_values[i] += player.hand_value
 
     # Print the results of the games
-    print("Number of Runs:", num_runs)
+    print("Number of Runs:", RUN_COUNT)
     for i, team in enumerate(teams):
-        print(f"{team.name} Average Score: {scores[i] / num_runs}")
-        print(f"{team.name} Num Wins: {wins[i]}")
-        print(f"{team.name} Win Percentage: {wins[i] / num_runs * 100}%\n")
+        print(f"{team.name} Average Score: {team_scores[i] / RUN_COUNT}")
+        print(f"{team.name} Num Wins: {team_wins[i]}")
+        print(f"{team.name} Win Percentage: {team_wins[i] / RUN_COUNT * 100}%\n")
 
     for i, player in enumerate(players):
-        print(f"{player.name} Average Hand Value: {hand_values[i] / num_runs}")
+        print(f"{player.name} Average Hand Value: {player_hand_values[i] / RUN_COUNT}")
 
 if __name__ == '__main__':
     main()
