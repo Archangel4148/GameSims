@@ -7,6 +7,7 @@ from playing_card_tools import Card, Deck
 class Player:
     name: str = "NO_NAME"
     hand: list[Card] | None = None
+    hand_value: int = 0
 
     def __post_init__(self):
         if self.hand is None:
@@ -40,7 +41,10 @@ class EuchreDeck(Deck):
     def deal(self, num_cards: int, players: list[Player]):
         for _ in range(num_cards):
             for player in players:
-                player.hand.append(self.draw_card())
+                card = self.draw_card()
+                player.hand.append(card)
+                player.hand_value += card.value
+
 
 
 def create_teams(num_teams: int, players: list[Player]):

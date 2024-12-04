@@ -11,7 +11,8 @@ def main():
 
     scores = [0] * len(teams)
     wins = [0] * len(teams)
-    num_runs = 10000
+    hand_values = [0] * len(players)
+    num_runs = 1000
 
     for _ in range(num_runs):
 
@@ -22,6 +23,8 @@ def main():
         while not game_over:
             for team in teams:
                 team.tricks_taken = 0
+            for player in players:
+                player.hand_value = 0
             # Re-deal
             deck.reset()
             deck.deal(5, players)
@@ -63,6 +66,8 @@ def main():
             # print(team.name, "-", team.score)
             scores[i] += team.score
             team.score = 0
+        for i, player in enumerate(players):
+            hand_values[i] += player.hand_value
 
     # Print the results of the games
     print("Number of Runs:", num_runs)
@@ -70,6 +75,9 @@ def main():
         print(f"{team.name} Average Score: {scores[i] / num_runs}")
         print(f"{team.name} Num Wins: {wins[i]}")
         print(f"{team.name} Win Percentage: {wins[i] / num_runs * 100}%\n")
+
+    for i, player in enumerate(players):
+        print(f"{player.name} Average Hand Value: {hand_values[i] / num_runs}")
 
 if __name__ == '__main__':
     main()
