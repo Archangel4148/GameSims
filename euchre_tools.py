@@ -47,35 +47,33 @@ class EuchreDeck(Deck):
                 player.hand_value += card.value
 
 
-
 def create_teams(num_teams: int, players: list[Player]):
     if len(players) > 4:
         raise ValueError("Too many players (maximum of 4)")
     return [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
 
-def evaluate_hand_winner(played_cards: list[tuple[Card, Player]]) -> tuple[Card, Player]:
+
+def evaluate_hand_winner(played_cards: list[tuple[Card, Player]], trump_suit: str) -> tuple[Card, Player]:
     """For now, highest card wins"""
 
-    # Get the list of indices where the max value appears
-    value_list = [card[0].value for card in played_cards]
-    max_value_indices = [i for i, value in enumerate(value_list) if value == max(value_list)]
+    # Get the effective value of each card
+    relative_values = []
+    for play in played_cards:
+        card = play[0]
+        if card.suit == trump_suit:
+            relative_values.append(card.value + 6)
+        else:
+            relative_values.append(card.value)
+
+    max_value_indices = [i for i, value in enumerate(relative_values) if value == max(relative_values)]
 
     if len(max_value_indices) == 1:
         # If there's only one winning card, return it
         return played_cards[max_value_indices[0]]
+    else:
+        # If there is a tie (Nobody plays trump), choose the winner at random
+        return played_cards[random.choice(max_value_indices)]
 
-    # Otherwise, use the suit as a tie-breaker
-    suit_priority = {'Spades': 4, 'Clubs': 3, 'Diamonds': 2, 'Hearts': 1}
-
-    # Sort the tied cards by their suit priority (highest priority wins)
-    sorted_tied_cards = sorted(
-        [played_cards[i][0] for i in max_value_indices],
-        key=lambda play: suit_priority[play.suit],
-        reverse=True
-    )
-
-    # Return the index of the card with the highest suit priority
-    return played_cards[[play[0] for play in played_cards].index(sorted_tied_cards[0])]
 
 def select_best_play(hand: list[Card], played_cards: list[tuple[Card, Player]], leading_player: Player,
                      trump_suit: str, is_first_play: bool, player_position: int,
@@ -96,4 +94,13 @@ def select_best_play(hand: list[Card], played_cards: list[tuple[Card, Player]], 
     - The best Card to play from the hand.
     """
 
-    return random.choice(hand)
+    trump_cards = [(i, card) for i, card in enumerate(hand) if card.suit == trump_suit]
+    if trump_cards:
+        trump_values = [trump[1].value for trump in trump_cards]
+        trump_indices = [trump[0] for trump in trump_cards]
+        max_index = trump_values.index(max(trump_values))
+        play = hand[trump_indices[max_index]]
+    else:
+        play = random.choice(hand)
+
+    return play

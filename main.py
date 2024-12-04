@@ -29,6 +29,7 @@ def main():
             # Re-deal
             deck.reset()
             deck.deal(5, players)
+            trump_suit = deck.peek().suit
 
             # Initial turn order (changes each round depending on who takes the trick)
             turn_order = [0, 1, 2, 3]
@@ -36,6 +37,8 @@ def main():
             # Round loop (Always 5 rounds for 5 cards/hand
             for game_round in range(5):
                 # print("=== Round", game_round + 1, "===")
+                # print("Trump:", trump_suit)
+
                 played_cards = []
                 current_winner = None
                 for turn_index, player_index in enumerate(turn_order):
@@ -45,7 +48,7 @@ def main():
                         hand=player.hand,
                         played_cards=played_cards,
                         leading_player=players[turn_order[0]],
-                        trump_suit="NOT IMPLEMENTED YET",
+                        trump_suit=trump_suit,
                         is_first_play=(turn_index == 0),
                         player_position=turn_index,
                         current_winner=current_winner,
@@ -54,7 +57,7 @@ def main():
                     played_cards.append((card, player))
                     # print(f"{players[player_index].name} played the {played_cards[-1][0]}")
 
-                    current_winner = evaluate_hand_winner(played_cards)
+                    current_winner = evaluate_hand_winner(played_cards, trump_suit)
                     # print("Current Winner:", current_winner[1].name)
 
                 winner = current_winner[1]
