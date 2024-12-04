@@ -49,7 +49,25 @@ def create_teams(num_teams: int, players: list[Player]):
     return [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
 
 def get_winning_card_index(played_cards: list[Card]):
-    # For now, just returning the highest value card index
-    value_list = [card.value for card in played_cards]
+    """For now, highest card wins"""
 
-    return value_list.index(max(value_list))
+    # Get the list of indices where the max value appears
+    value_list = [card.value for card in played_cards]
+    max_value_indices = [i for i, value in enumerate(value_list) if value == max(value_list)]
+
+    if len(max_value_indices) == 1:
+        # If there's only one winning card, return it
+        return max_value_indices[0]
+
+    # Otherwise, use the suit as a tie-breaker
+    suit_priority = {'Spades': 4, 'Clubs': 3, 'Diamonds': 2, 'Hearts': 1}
+
+    # Sort the tied cards by their suit priority (highest priority wins)
+    sorted_tied_cards = sorted(
+        [played_cards[i] for i in max_value_indices],
+        key=lambda card: suit_priority[card.suit],
+        reverse=True
+    )
+
+    # Return the index of the card with the highest suit priority
+    return played_cards.index(sorted_tied_cards[0])

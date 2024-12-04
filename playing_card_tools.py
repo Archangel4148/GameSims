@@ -1,3 +1,4 @@
+import random
 from random import randint
 
 
@@ -59,12 +60,7 @@ class Deck:
         self.shuffle()
 
     def shuffle(self):
-        """Shuffles the deck using the Fisher-Yates shuffle algorithm"""
-        for i in range(0, len(self.cards) - 1):
-            j = randint(i, len(self.cards) - 1)
-            temp = self.cards[i]
-            self.cards[i] = self.cards[j]
-            self.cards[j] = temp
+        random.shuffle(self.cards)
 
     def draw_card(self):
         """Draws and returns the top card of the deck"""
