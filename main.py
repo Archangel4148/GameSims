@@ -1,4 +1,4 @@
-from euchre_tools import Player, Team, EuchreDeck, create_teams, get_winning_card_index
+from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play
 
 
 def main():
@@ -29,18 +29,39 @@ def main():
             deck.reset()
             deck.deal(5, players)
 
-            # Keep track of turn order (changes each round depending on who takes the trick)
+            # Initial turn order (changes each round depending on who takes the trick)
             turn_order = [0, 1, 2, 3]
 
             # Round loop (Always 5 rounds for 5 cards/hand
-            for turn in range(5):
-                # print("=== Round", turn + 1, "===")
+            for game_round in range(5):
+                # print("=== Round", game_round + 1, "===")
                 played_cards = []
-                for player_index in turn_order:
-                    played_cards.append(players[player_index].hand.pop())
-                    # print(f"{players[player_index].name} played the {played_cards[-1]}")
+                current_winner = None
+                for turn_index, player_index in enumerate(turn_order):
+                    player = players[player_index]
+                    # Each player makes a play based on the state of the game on their turn
+                    card = select_best_play(
+                        hand=player.hand,
+                        played_cards=played_cards,
+                        leading_player=players[turn_order[0]],
+                        trump_suit="NOT IMPLEMENTED YET",
+                        is_first_play=(turn_index == 0),
+                        player_position=turn_index,
+                        current_winner=current_winner,
+                    )
+                    player.hand.remove(card)
+                    played_cards.append((card, player))
+                    # print(f"{players[player_index].name} played the {played_cards[-1][0]}")
 
-                winner = players[get_winning_card_index(played_cards)]
+                    current_winner = evaluate_hand_winner(played_cards)
+                    # print("Current Winner:", current_winner[1].name)
+
+                winner = current_winner[1]
+
+                # Update the turn order: winner goes first in the next round
+                winner_index = players.index(winner)
+                turn_order = turn_order[winner_index:] + turn_order[:winner_index]
+
                 for team in teams:
                     if winner in team.members:
                         team.tricks_taken += 1
