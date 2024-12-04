@@ -9,6 +9,7 @@ class Player:
     name: str = "NO_NAME"
     hand: list[Card] | None = None
     hand_value: int = 0
+    team = None
 
     def __post_init__(self):
         if self.hand is None:
@@ -16,6 +17,9 @@ class Player:
 
     def __str__(self):
         return f"{self.name}: {[str(card) for card in self.hand]}"
+
+    def set_team(self, team):
+        self.team = team
 
 
 @dataclasses.dataclass
@@ -50,7 +54,11 @@ class EuchreDeck(Deck):
 def create_teams(num_teams: int, players: list[Player]):
     if len(players) > 4:
         raise ValueError("Too many players (maximum of 4)")
-    return [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
+    teams = [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
+    for team in teams:
+        for player in team.members:
+            player.set_team(team)
+    return teams
 
 
 def evaluate_hand_winner(played_cards: list[tuple[Card, Player]], trump_suit: str) -> tuple[Card, Player]:

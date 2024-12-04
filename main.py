@@ -34,7 +34,7 @@ def main():
             # Initial turn order (changes each round depending on who takes the trick)
             turn_order = [0, 1, 2, 3]
 
-            # Round loop (Always 5 rounds for 5 cards/hand
+            # Round loop (Always 5 rounds for 5 cards/hand)
             for game_round in range(5):
                 # print("=== Round", game_round + 1, "===")
                 # print("Trump:", trump_suit)
@@ -43,7 +43,7 @@ def main():
                 current_winner = None
                 for turn_index, player_index in enumerate(turn_order):
                     player = players[player_index]
-                    # Each player makes a play based on the state of the game on their turn
+                    # Each player plays a card based on the state of the game on their turn
                     card = select_best_play(
                         hand=player.hand,
                         played_cards=played_cards,
@@ -57,38 +57,41 @@ def main():
                     played_cards.append((card, player))
                     # print(f"{players[player_index].name} played the {played_cards[-1][0]}")
 
+                    # Update the player that is "winning" after each card is played
                     current_winner = evaluate_hand_winner(played_cards, trump_suit)
                     # print("Current Winner:", current_winner[1].name)
 
-                winner = current_winner[1]
+                # After all players have played, the current winner takes the trick
+                trick_taker = current_winner[1]
+                trick_taker_index = players.index(trick_taker)
 
-                # Update the turn order: winner goes first in the next round
-                winner_index = players.index(winner)
-                turn_order = turn_order[winner_index:] + turn_order[:winner_index]
+                # Update the turn order: trick taker goes first in the next round
+                turn_order = turn_order[trick_taker_index:] + turn_order[:trick_taker_index]
 
-                for team in teams:
-                    if winner in team.members:
-                        team.tricks_taken += 1
-                        # print(team.name, "takes the trick!\n")
-                        break
+                # Update tricks taken
+                trick_taker.team.tricks_taken += 1
 
+            # Decide which team took the most tricks
             tricks_taken_by_team = [team.tricks_taken for team in teams]
             winning_team = teams[tricks_taken_by_team.index(max(tricks_taken_by_team))]
+
+            # Add detection for if a team was Euchred (lost 5-0), updating scores accordingly
             if winning_team.tricks_taken == 5:
                 winning_team.score += 2
-                # print(f"-- {winning_team.name} gets 2 points ({winning_team.score}) --\n")
             else:
                 winning_team.score += 1
-                # print(f"-- {winning_team.name} gets 1 point ({winning_team.score}) --\n")
 
+            # If either team reaches 10 points, the game ends
             if max([team.score for team in teams]) >= 10:
                 game_over = True
 
+        # Update team wins
         teams_by_score = [team.score for team in teams]
-        winner = teams_by_score.index(max(teams_by_score))
-        team_wins[winner] += 1
+        winning_team_index = teams_by_score.index(max(teams_by_score))
+        team_wins[winning_team_index] += 1
+
+        # Update team score and player hand values (for averaging)
         for i, team in enumerate(teams):
-            # print(team.name, "-", team.score)
             team_scores[i] += team.score
             team.score = 0
         for i, player in enumerate(players):
