@@ -1,6 +1,6 @@
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play
 
-RUN_COUNT = 1000
+RUN_COUNT = 10000
 
 def main():
     # Create a Euchre deck (pre-shuffled)
@@ -16,8 +16,6 @@ def main():
     player_hand_values = [0] * len(players)
 
     for _ in range(RUN_COUNT):
-        # Reset the deck before each game
-        deck.reset()
         game_over = False
 
         # Game loop
@@ -82,7 +80,8 @@ def main():
                 winning_team.score += 1
 
             # If either team reaches 10 points, the game ends
-            if max([team.score for team in teams]) >= 10:
+            max_score = max([team.score for team in teams])
+            if max_score >= 10:
                 game_over = True
 
         # Update team wins
