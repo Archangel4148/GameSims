@@ -1,8 +1,9 @@
 import concurrent.futures  # for parallel execution
 
-from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play
+from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
+    get_relative_value
 
-RUN_COUNT = 2500
+RUN_COUNT = 10000
 
 
 # Function to run a single simulation
@@ -15,6 +16,7 @@ def run_game_simulation(num_teams: int, num_players: int):
     game_over = False
     player_hand_values = [0] * len(players)
     rounds_played = 0
+    winning_index = None
 
     while not game_over:
         # Reset the game variables for each simulation
@@ -28,6 +30,12 @@ def run_game_simulation(num_teams: int, num_players: int):
         deck.deal(5, players)
         trump_suit = deck.peek().suit
 
+        # Update player hand and card values
+        for player in players:
+            for card in player.hand:
+                card.value = get_relative_value(card, trump_suit)
+            player.hand_value = sum(card.value for card in player.hand)
+
         rounds_played += 1
 
         # Initialize turn order
@@ -35,13 +43,14 @@ def run_game_simulation(num_teams: int, num_players: int):
 
         # Round loop (5 plays per hand)
         for game_round in range(5):
-            played_cards = []
+            plays = []
             current_winner = None
             for turn_index, player_index in enumerate(turn_order):
                 player = players[player_index]
                 card = select_best_play(
                     hand=player.hand,
-                    played_cards=played_cards,
+                    suit_count=player.suit_count,
+                    plays_made=plays,
                     leading_player=players[turn_order[0]],
                     trump_suit=trump_suit,
                     is_first_play=(turn_index == 0),
@@ -49,13 +58,16 @@ def run_game_simulation(num_teams: int, num_players: int):
                     current_winner=current_winner,
                 )
                 player.hand.remove(card)
-                played_cards.append((card, player))
-                current_winner = evaluate_hand_winner(played_cards, trump_suit)
+                player.suit_count[card.suit] -= 1
+                plays.append((card, player))
+                current_winner = evaluate_hand_winner(plays, trump_suit)
 
             # Determine trick taker and adjust turn order
             trick_taker = current_winner[1]
             trick_taker_index = players.index(trick_taker)
             turn_order = turn_order[trick_taker_index:] + turn_order[:trick_taker_index]
+
+            # print(f"Round {game_round + 1} Winner: {trick_taker.name}\n\n============\n")
 
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
