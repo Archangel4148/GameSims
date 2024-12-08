@@ -52,15 +52,18 @@ class EuchreDeck(Deck):
         super().__init__(standard_deck=False, deck_list=euchre_deck_list)
 
     def deal(self, num_cards: int, players: list[Player]):
+        # Deal <num_cards> cards to each player
         for _ in range(num_cards):
             for player in players:
                 card = self.draw_card()
                 player.hand.append(card)
+                # Update player's suit count and hand value
                 player.suit_count[card.suit] += 1
                 player.hand_value += card.value
 
 
 def create_teams(num_teams: int, players: list[Player]):
+    # Separate players into <num_teams> teams
     if len(players) > 4:
         raise ValueError("Too many players (maximum of 4)")
     teams = [Team(f"Team {i + 1}", players[i::num_teams]) for i in range(num_teams)]
@@ -71,7 +74,7 @@ def create_teams(num_teams: int, players: list[Player]):
 
 
 def get_relative_value(card: Card, trump_suit: str) -> int:
-    # Get the relative value of a card
+    # Get the relative value of a card based on the trump suit
     suit_pairs = {"Spades": "Clubs", "Clubs": "Spades", "Hearts": "Diamonds", "Diamonds": "Hearts"}
     relative_value = card.value
 
@@ -85,20 +88,15 @@ def get_relative_value(card: Card, trump_suit: str) -> int:
     return relative_value
 
 
-def evaluate_hand_winner(played_cards: list[tuple[Card, Player]], trump_suit: str) -> tuple[Card, Player]:
-    """For now, highest card wins"""
+def evaluate_hand_winner(played_cards: list[tuple[Card, Player]]) -> tuple[Card, Player]:
+    """Returns the card that won the trick and the player who played it."""
 
-    # Get the effective value of each card
-    relative_values = [get_relative_value(card, trump_suit) for card, _ in played_cards]
+    card_values = [card.value for card, _ in played_cards]
 
-    max_value_indices = [i for i, value in enumerate(relative_values) if value == max(relative_values)]
+    # Find the index of the card with the highest value
+    max_value_index = card_values.index(max(card_values))
 
-    if len(max_value_indices) == 1:
-        # If there's only one winning card, return it
-        return played_cards[max_value_indices[0]]
-    else:
-        # If there is a tie (Nobody plays trump), choose the winner at random
-        return played_cards[random.choice(max_value_indices)]
+    return played_cards[max_value_index]
 
 
 def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: list[tuple[Card, Player]],
@@ -179,6 +177,8 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
         else:
             # If you can't match suit or play trump, play a random card
             play = random.choice(hand)
+            # Cards that don't match suit or trump are worthless
+            play.value = 0
 
-    print("Play:", str(play), "\n")
+    print(f"Play: {play} ({play.value})")
     return play

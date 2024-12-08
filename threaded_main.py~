@@ -1,9 +1,10 @@
-import concurrent.futures  # for parallel execution
+import concurrent.futures
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
     get_relative_value
 
-RUN_COUNT = 10000
+# Number of full games to simulate
+RUN_COUNT = 1000
 
 
 # Function to run a single simulation
@@ -16,7 +17,9 @@ def run_game_simulation(num_teams: int, num_players: int):
     game_over = False
     player_hand_values = [0] * len(players)
     rounds_played = 0
+    winning_index = None
 
+    # Game loop (Keep playing until a team wins 10 points)
     while not game_over:
         # Reset the game variables for each simulation
         for team in teams:
@@ -29,7 +32,7 @@ def run_game_simulation(num_teams: int, num_players: int):
         deck.deal(5, players)
         trump_suit = deck.peek().suit
 
-        # Update player hand and card values
+        # Update player hand and card values based on trump suit
         for player in players:
             for card in player.hand:
                 card.value = get_relative_value(card, trump_suit)
@@ -45,6 +48,7 @@ def run_game_simulation(num_teams: int, num_players: int):
             plays = []
             current_winner = None
             for turn_index, player_index in enumerate(turn_order):
+                # Player turn (Select best card to play)
                 player = players[player_index]
                 card = select_best_play(
                     hand=player.hand,
@@ -56,17 +60,18 @@ def run_game_simulation(num_teams: int, num_players: int):
                     player_position=turn_index,
                     current_winner=current_winner,
                 )
+                # Play the card
                 player.hand.remove(card)
                 player.suit_count[card.suit] -= 1
                 plays.append((card, player))
-                current_winner = evaluate_hand_winner(plays, trump_suit)
+
+                # Update current winner
+                current_winner = evaluate_hand_winner(plays)
 
             # Determine trick taker and adjust turn order
             trick_taker = current_winner[1]
             trick_taker_index = players.index(trick_taker)
             turn_order = turn_order[trick_taker_index:] + turn_order[:trick_taker_index]
-
-            # print(f"Round {game_round + 1} Winner: {trick_taker.name}\n\n============\n")
 
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
@@ -90,7 +95,8 @@ def run_game_simulation(num_teams: int, num_players: int):
 
     team_scores = [team.score for team in teams]
     player_hand_values = [hand_value / rounds_played for hand_value in player_hand_values]
-    # Return the results: team scores, and player hand values to be used in aggregation
+
+    # Return team scores and player hand values to be used in aggregation
     return winning_index, team_scores, player_hand_values
 
 
@@ -99,6 +105,7 @@ def main():
     num_teams = 2
     num_players = 4
 
+    # Initialize cumulative totals
     cumulative_team_scores = [0] * num_teams
     cumulative_team_wins = [0] * num_teams
     cumulative_player_hand_values = [0] * num_players
@@ -107,7 +114,7 @@ def main():
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = [executor.submit(run_game_simulation, num_teams, num_players) for _ in range(RUN_COUNT)]
 
-        # Collect and process results after all futures are done
+        # Collect and process results after all simulations are done
         for future in concurrent.futures.as_completed(results):
             winning_team_index, team_scores_run, player_hand_values_run = future.result()
 
@@ -115,7 +122,7 @@ def main():
             for i, score in enumerate(team_scores_run):
                 cumulative_team_scores[i] += score
 
-            # Track team wins based on the winning team
+            # Accumulate team wins based on the winning team
             cumulative_team_wins[winning_team_index] += 1
 
             # Accumulate player hand values
@@ -126,7 +133,7 @@ def main():
     print("Number of Runs:", RUN_COUNT)
     for i in range(num_teams):
         print(f"Team {i + 1} Average Score: {cumulative_team_scores[i] / RUN_COUNT}")
-        print(f"Team {i + 1} Num Wins: {cumulative_team_wins[i]}")
+        print(f"Team {i + 1} Total Wins: {cumulative_team_wins[i]}")
         print(f"Team {i + 1} Win Percentage: {cumulative_team_wins[i] / RUN_COUNT * 100}%\n")
 
     for i in range(num_players):
