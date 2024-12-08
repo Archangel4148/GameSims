@@ -80,7 +80,8 @@ def evaluate_hand_winner(played_cards: list[tuple[Card, Player]], trump_suit: st
         return played_cards[max_value_indices[0]]
     else:
         # If there is a tie (Nobody plays trump), choose the winner at random
-        return played_cards[random.choice(max_value_indices)]
+        # return played_cards[random.choice(max_value_indices)]
+        return played_cards[max_value_indices[0]]
 
 
 def select_best_play(hand: list[Card], played_cards: list[tuple[Card, Player]], leading_player: Player,

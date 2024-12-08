@@ -2,7 +2,7 @@ import concurrent.futures  # for parallel execution
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play
 
-RUN_COUNT = 2500
+RUN_COUNT = 10000
 
 
 # Function to run a single simulation

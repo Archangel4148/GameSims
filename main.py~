@@ -2,7 +2,6 @@ from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_w
 
 RUN_COUNT = 10000
 
-
 def main():
     # Create a Euchre deck (pre-shuffled)
     deck = EuchreDeck()
@@ -106,7 +105,6 @@ def main():
 
     for i, player in enumerate(players):
         print(f"{player.name} Average Hand Value: {player_hand_values[i] / RUN_COUNT}")
-
 
 if __name__ == '__main__':
     main()
