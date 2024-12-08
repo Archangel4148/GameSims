@@ -1,4 +1,5 @@
 import concurrent.futures
+from random import randint
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
     get_relative_value
@@ -18,6 +19,8 @@ def run_game_simulation(num_teams: int, num_players: int):
     player_hand_values = [0] * len(players)
     rounds_played = 0
     winning_index = None
+    # Select a random starting player
+    leader = randint(0, 3)
 
     # Game loop (Keep playing until a team wins 10 points)
     while not game_over:
@@ -40,13 +43,14 @@ def run_game_simulation(num_teams: int, num_players: int):
 
         rounds_played += 1
 
-        # Initialize turn order
-        turn_order = [0, 1, 2, 3]
-
         # Round loop (5 plays per hand)
         for game_round in range(5):
             plays = []
             current_winner = None
+
+            # Set turn order based on the current leader
+            turn_order = [leader, (leader + 1) % 4, (leader + 2) % 4, (leader + 3) % 4]
+
             for turn_index, player_index in enumerate(turn_order):
                 # Player turn (Select best card to play)
                 player = players[player_index]
@@ -71,10 +75,12 @@ def run_game_simulation(num_teams: int, num_players: int):
             # Determine trick taker and adjust turn order
             trick_taker = current_winner[1]
             trick_taker_index = players.index(trick_taker)
-            turn_order = turn_order[trick_taker_index:] + turn_order[:trick_taker_index]
+            leader = trick_taker_index
 
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
+
+            # print(f"Trick taker: {trick_taker.name}\n====================\n")
 
         # Final scoring
         tricks_taken_by_team = [team.tricks_taken for team in teams]

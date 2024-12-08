@@ -127,7 +127,8 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
     else:
         matching_cards = []
 
-    trump_cards = [(i, card) for i, card in enumerate(hand) if card.suit == trump_suit]
+    # Get a list of trump cards (including the off-suit left bower)
+    trump_cards = [(i, card) for i, card in enumerate(hand) if card.value >= 15]
 
     # print("Trump suit:", trump_suit)
     # print("Hand:", [str(card) for card in hand])
@@ -137,9 +138,13 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
     # Logic for leading player
     if is_first_play:
         # Play the highest card that isn't trump, unless it is the right bower
-        non_trump_cards = [(i, card) for i, card in enumerate(hand) if card.suit != trump_suit]
-        has_right_bower = hand_values.count(13) == 1
-        if non_trump_cards:
+        non_trump_cards = [(i, card) for i, card in enumerate(hand) if card.value < 15]
+        has_right_bower = hand_values.count(22) == 1
+
+        if has_right_bower:
+            # Lead with the right bower if you have it (Guaranteed win)
+            play = hand[hand_values.index(22)]
+        elif non_trump_cards:
             # Play the highest non-trump card
             non_trump_values = [card.value for _, card in non_trump_cards]
             play_index = non_trump_values.index(max(non_trump_values))
@@ -175,8 +180,8 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
                 play = hand[hand_values.index(min(hand_values))]
 
         else:
-            # If you can't match suit or play trump, play a random card
-            play = random.choice(hand)
+            # If you can't match suit or play trump, throw out a trash card
+            play = hand[hand_values.index(min(hand_values))]
             # Cards that don't match suit or trump are worthless
             play.value = 0
 
