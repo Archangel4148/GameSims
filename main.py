@@ -2,10 +2,10 @@ import concurrent.futures
 from random import randint
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
-    get_relative_value
+    get_relative_value, decide_trump
 
 # Number of full games to simulate
-RUN_COUNT = 10000
+RUN_COUNT = 1
 
 
 # Function to run a single simulation
@@ -19,8 +19,12 @@ def run_game_simulation(num_teams: int, num_players: int):
     player_hand_values = [0] * len(players)
     rounds_played = 0
     winning_index = None
-    # Select a random starting player
-    leader = randint(0, 3)
+
+    # Select a random dealer
+    dealer = randint(0, 3)
+
+    # The player to the left of the dealer starts play
+    leader = (dealer + 1) % 4
 
     # Game loop (Keep playing until a team wins 10 points)
     while not game_over:
@@ -30,10 +34,12 @@ def run_game_simulation(num_teams: int, num_players: int):
         for player in players:
             player.hand_value = 0  # Reset player hand values
 
-        # Re-deal and set trump suit
+        # Re-deal
         deck.reset()
         deck.deal(5, players)
-        trump_suit = deck.peek().suit
+
+        # Select trump
+        trump_suit = decide_trump(deck.peek(), players, players[dealer % 4])
 
         # Update player hand and card values based on trump suit
         for player in players:
@@ -42,6 +48,7 @@ def run_game_simulation(num_teams: int, num_players: int):
             player.hand_value = sum(card.value for card in player.hand)
 
         rounds_played += 1
+        dealer += 1
 
         # Round loop (5 plays per hand)
         for game_round in range(5):
@@ -65,9 +72,13 @@ def run_game_simulation(num_teams: int, num_players: int):
                     current_winner=current_winner,
                 )
                 # Play the card
+                print(player)
+
                 player.hand.remove(card)
                 player.suit_count[card.suit] -= 1
                 plays.append((card, player))
+
+                print(player.name, "played the", str(card))
 
                 # Update current winner
                 current_winner = evaluate_hand_winner(plays)
@@ -80,7 +91,7 @@ def run_game_simulation(num_teams: int, num_players: int):
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
 
-            # print(f"Trick taker: {trick_taker.name}\n====================\n")
+            print(f"Trick taker: {trick_taker.name}\n====================\n")
 
         # Final scoring
         tricks_taken_by_team = [team.tricks_taken for team in teams]
