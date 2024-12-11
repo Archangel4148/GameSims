@@ -5,7 +5,7 @@ from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_w
     get_relative_value, decide_trump
 
 # Number of full games to simulate
-RUN_COUNT = 1
+RUN_COUNT = 10000
 
 
 # Function to run a single simulation
@@ -72,13 +72,9 @@ def run_game_simulation(num_teams: int, num_players: int):
                     current_winner=current_winner,
                 )
                 # Play the card
-                print(player)
-
                 player.hand.remove(card)
                 player.suit_count[card.suit] -= 1
                 plays.append((card, player))
-
-                print(player.name, "played the", str(card))
 
                 # Update current winner
                 current_winner = evaluate_hand_winner(plays)
@@ -91,7 +87,7 @@ def run_game_simulation(num_teams: int, num_players: int):
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
 
-            print(f"Trick taker: {trick_taker.name}\n====================\n")
+            # print(f"Trick taker: {trick_taker.name}\n====================\n")
 
         # Final scoring
         tricks_taken_by_team = [team.tricks_taken for team in teams]

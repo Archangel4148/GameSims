@@ -227,25 +227,14 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str
     # The player to the left of the dealer starts the decision process
     start_index = (players.index(dealer) + 1) % len(players)
 
-    # Initialize trump_suit to None
-    trump_suit = None
-    passed_players = []
-
-    print("Dealer:", dealer.name)
-    print("Flipped Card:", shown_card)
-
     # Go around the table and let players decide whether to pass or have the dealer pick up the card
     for i in range(len(players)):
         current_player = players[(start_index + i) % len(players)]
         goal_suit, goal_strength = current_player.get_strongest_suit()
 
         if shown_suit == goal_suit:
-            print(f"{current_player.name} decides trump to be {shown_suit}")
+            # print(f"{current_player.name} decides trump to be {shown_suit}")
             return shown_suit
-        else:
-            print(f"{current_player.name} passes ({goal_suit})")
-
-    print("Nobody wanted", shown_suit, "to be trump...")
 
     # Go around the table again and allow players to choose trump
     for i in range(len(players)):
@@ -254,8 +243,5 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str
 
         # Player decides to choose trump based on their current hand (dealer must choose if it makes it back to them)
         if goal_strength > 10 or i == len(players) - 1:
-            print(f"{current_player.name} chooses {goal_suit} ({goal_strength})")
+            # print(f"{current_player.name} chooses {goal_suit} ({goal_strength})")
             return goal_suit
-        else:
-            # If a player's hand is too bad, just pass (no specific suit would win them the round)
-            print(f"{current_player.name} passes ({goal_strength})")
