@@ -57,7 +57,7 @@ class Team:
     score: int = 0
 
     def __str__(self):
-        return f"{self.name}: {', '.join(map(str, self.members))}"
+        return f"{self.name}: {', '.join(player.name for player in self.members)}"
 
 
 class EuchreDeck(Deck):
@@ -208,7 +208,7 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
     return play
 
 
-def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str:
+def decide_trump(shown_card: Card, players: list[Player], dealer: Player, verbose=False) -> str:
     """
     Decide the trump suit for the round based on the shown (flipped) card and player decisions.
 
@@ -220,6 +220,9 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str
     Returns:
     - trump_suit: The chosen trump suit as a string.
     """
+
+    if verbose:
+        print("Shown card:", shown_card)
 
     # Identify the suit of the shown card
     shown_suit = shown_card.suit
@@ -233,8 +236,11 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str
         goal_suit, goal_strength = current_player.get_strongest_suit()
 
         if shown_suit == goal_suit:
-            # print(f"{current_player.name} decides trump to be {shown_suit}")
+            if verbose:
+                print(f"{current_player.name} decides trump to be {shown_suit}")
             return shown_suit
+        elif verbose:
+            print(f"{current_player.name} passes the decision")
 
     # Go around the table again and allow players to choose trump
     for i in range(len(players)):
@@ -243,5 +249,8 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player) -> str
 
         # Player decides to choose trump based on their current hand (dealer must choose if it makes it back to them)
         if goal_strength > 10 or i == len(players) - 1:
-            # print(f"{current_player.name} chooses {goal_suit} ({goal_strength})")
+            if verbose:
+                print(f"{current_player.name} chooses {goal_suit} ({goal_strength})")
             return goal_suit
+        elif verbose:
+            print(f"{current_player.name} does not choose a suit (passes)")

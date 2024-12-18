@@ -4,8 +4,11 @@ from random import randint
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
     get_relative_value, decide_trump
 
-# Number of full games to simulate
-RUN_COUNT = 10000
+VERBOSE = False
+RUN_COUNT = 10000  # Number of full games to simulate
+
+if VERBOSE and RUN_COUNT > 1:
+    RUN_COUNT = 1
 
 
 # Function to run a single simulation
@@ -14,6 +17,11 @@ def run_game_simulation(num_teams: int, num_players: int):
     players: list[Player] = [Player(f"P{i + 1}", []) for i in range(num_players)]
     teams: list[Team] = create_teams(num_teams, players)
     deck = EuchreDeck()
+    if VERBOSE:
+        print("Teams:")
+        for team in teams:
+            print(team)
+        print()
 
     game_over = False
     player_hand_values = [0] * len(players)
@@ -28,6 +36,8 @@ def run_game_simulation(num_teams: int, num_players: int):
 
     # Game loop (Keep playing until a team wins 10 points)
     while not game_over:
+        if VERBOSE:
+            print("=== Round", rounds_played + 1, "===")
         # Reset the game variables for each simulation
         for team in teams:
             team.tricks_taken = 0
@@ -39,7 +49,9 @@ def run_game_simulation(num_teams: int, num_players: int):
         deck.deal(5, players)
 
         # Select trump
-        trump_suit = decide_trump(deck.peek(), players, players[dealer % 4])
+        trump_suit = decide_trump(deck.peek(), players, players[dealer % 4], VERBOSE)
+        if VERBOSE:
+            print(f"\nTrump: {trump_suit}\n")
 
         # Update player hand and card values based on trump suit
         for player in players:
@@ -71,6 +83,11 @@ def run_game_simulation(num_teams: int, num_players: int):
                     player_position=turn_index,
                     current_winner=current_winner,
                 )
+
+                if VERBOSE:
+                    print(player)
+                    print(f"{player.name} plays the {card}\n")
+
                 # Play the card
                 player.hand.remove(card)
                 player.suit_count[card.suit] -= 1
@@ -122,6 +139,7 @@ def main():
     cumulative_team_scores = [0] * num_teams
     cumulative_team_wins = [0] * num_teams
     cumulative_player_hand_values = [0] * num_players
+    cumulative_score_combo_counts = {}
 
     # Use ThreadPoolExecutor to parallelize simulations
     with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -134,6 +152,13 @@ def main():
             # Accumulate team scores and wins
             for i, score in enumerate(team_scores_run):
                 cumulative_team_scores[i] += score
+            # Accumulate team score combo
+            team_scores_run.sort()
+            score_combo = "-".join(map(str, team_scores_run))
+            try:
+                cumulative_score_combo_counts[score_combo] += 1
+            except KeyError:
+                cumulative_score_combo_counts[score_combo] = 1
 
             # Accumulate team wins based on the winning team
             cumulative_team_wins[winning_team_index] += 1
@@ -143,11 +168,23 @@ def main():
                 cumulative_player_hand_values[i] += hand_value
 
     # Print results after all runs
-    print("Number of Runs:", RUN_COUNT)
+    print("Number of Runs:", RUN_COUNT, "\n")
     for i in range(num_teams):
         print(f"Team {i + 1} Average Score: {cumulative_team_scores[i] / RUN_COUNT}")
         print(f"Team {i + 1} Total Wins: {cumulative_team_wins[i]}")
         print(f"Team {i + 1} Win Percentage: {cumulative_team_wins[i] / RUN_COUNT * 100}%\n")
+
+    # Sort the score combos by occurrence in descending order
+    most_common_combos = sorted(cumulative_score_combo_counts, key=cumulative_score_combo_counts.get, reverse=True)
+
+    # Get the top 3 most common combos
+    top_three_combos = most_common_combos[:3]
+
+    # Print the top 3 most common score combos and their occurrences
+    print("Top 3 most common score combinations:")
+    for i, combo in enumerate(top_three_combos):
+        print(f"{i+1}. {combo} with {cumulative_score_combo_counts[combo]} occurrences")
+    print()
 
     for i in range(num_players):
         print(f"Player {i + 1} Average Hand Value: {cumulative_player_hand_values[i] / RUN_COUNT}")
