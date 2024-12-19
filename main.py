@@ -2,7 +2,7 @@ import concurrent.futures
 from random import randint
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
-    get_relative_value, decide_trump
+    get_relative_value, decide_trump, select_best_discard
 
 VERBOSE = False
 RUN_COUNT = 10000  # Number of full games to simulate
@@ -49,9 +49,7 @@ def run_game_simulation(num_teams: int, num_players: int):
         deck.deal(5, players)
 
         # Select trump
-        trump_suit = decide_trump(deck.peek(), players, players[dealer % 4], VERBOSE)
-        if VERBOSE:
-            print(f"\nTrump: {trump_suit}\n")
+        trump_suit, dealer_takes = decide_trump(deck.peek(), players, players[dealer % 4], VERBOSE)
 
         # Update player hand and card values based on trump suit
         for player in players:
@@ -59,8 +57,23 @@ def run_game_simulation(num_teams: int, num_players: int):
                 card.value = get_relative_value(card, trump_suit)
             player.hand_value = sum(card.value for card in player.hand)
 
+        if dealer_takes:
+            # If necessary, the dealer discards a card and takes the revealed card from the deck
+            dealer_obj = players[dealer]
+            dealer_discard = select_best_discard(dealer_obj, trump_suit)
+            dealer_obj.hand.remove(dealer_discard)
+            card = deck.draw_card()
+            dealer_obj.suit_count[dealer_discard.suit] -= 1
+            dealer_obj.suit_count[card.suit] += 1
+            dealer_obj.hand.append(card)
+            if VERBOSE:
+                print(f"The dealer ({dealer_obj.name}) discards the {dealer_discard} and takes the shown card ({card})")
+
+        if VERBOSE:
+            print(f"\nTrump: {trump_suit}\n")
+
         rounds_played += 1
-        dealer += 1
+        dealer = (dealer + 1) % 4
 
         # Round loop (5 plays per hand)
         for game_round in range(5):
@@ -183,7 +196,7 @@ def main():
     # Print the top 3 most common score combos and their occurrences
     print("Top 3 most common score combinations:")
     for i, combo in enumerate(top_three_combos):
-        print(f"{i+1}. {combo} with {cumulative_score_combo_counts[combo]} occurrences")
+        print(f"{i + 1}. {combo} with {cumulative_score_combo_counts[combo]} occurrences")
     print()
 
     for i in range(num_players):

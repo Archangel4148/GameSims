@@ -208,7 +208,21 @@ def select_best_play(hand: list[Card], suit_count: dict[str, int], plays_made: l
     return play
 
 
-def decide_trump(shown_card: Card, players: list[Player], dealer: Player, verbose=False) -> str:
+def select_best_discard(player: Player, trump_suit: str) -> Card:
+    """Select the best card to discard from the hand given a trump suit"""
+    # If you can eliminate a non-trump suit, do it
+    possible_elimination_suits = [suit for suit, count in player.suit_count.items() if
+                                  count == 1 and suit != trump_suit]
+    if possible_elimination_suits:
+        eliminable_cards = [card for card in player.hand if card.suit in possible_elimination_suits]
+        return min(eliminable_cards, key=lambda card: card.value)
+
+    else:
+        # Otherwise, just discard the lowest value card in the hand
+        return min(player.hand, key=lambda card:card.value)
+
+
+def decide_trump(shown_card: Card, players: list[Player], dealer: Player, verbose=False) -> tuple[str, bool]:
     """
     Decide the trump suit for the round based on the shown (flipped) card and player decisions.
 
@@ -238,7 +252,7 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player, verbos
         if shown_suit == goal_suit:
             if verbose:
                 print(f"{current_player.name} decides trump to be {shown_suit}")
-            return shown_suit
+            return shown_suit, True
         elif verbose:
             print(f"{current_player.name} passes the decision")
 
@@ -251,6 +265,6 @@ def decide_trump(shown_card: Card, players: list[Player], dealer: Player, verbos
         if goal_strength > 10 or i == len(players) - 1:
             if verbose:
                 print(f"{current_player.name} chooses {goal_suit} ({goal_strength})")
-            return goal_suit
+            return goal_suit, False
         elif verbose:
             print(f"{current_player.name} does not choose a suit (passes)")
