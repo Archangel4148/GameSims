@@ -5,7 +5,7 @@ from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_w
     get_relative_value, decide_trump, select_best_discard
 
 VERBOSE = False
-RUN_COUNT = 10000  # Number of full games to simulate
+RUN_COUNT = 5000  # Number of full games to simulate
 
 if VERBOSE and RUN_COUNT > 1:
     RUN_COUNT = 1
@@ -116,8 +116,8 @@ def run_game_simulation(num_teams: int, num_players: int):
 
             # Update tricks taken for the team of the trick_taker
             trick_taker.team.tricks_taken += 1
-
-            # print(f"Trick taker: {trick_taker.name}\n====================\n")
+            if VERBOSE:
+                print(f"{trick_taker.name} ({trick_taker.team.name}) takes the trick!\n")
 
         # Final scoring
         tricks_taken_by_team = [team.tricks_taken for team in teams]
@@ -126,8 +126,13 @@ def run_game_simulation(num_teams: int, num_players: int):
 
         if winning_team.tricks_taken == 5:
             winning_team.score += 2
+            if VERBOSE:
+                print(f"\n{winning_team.name} scores 2 points!\n")
         else:
             winning_team.score += 1
+            if VERBOSE:
+                print(f"\n{winning_team.name} scores 1 point!\n")
+
 
         # Add player hand values to cumulative totals
         for i, player in enumerate(players):
