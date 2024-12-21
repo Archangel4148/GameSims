@@ -1,11 +1,12 @@
 import concurrent.futures
+import time
 from random import randint
 
 from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_winner, select_best_play, \
     get_relative_value, decide_trump, select_best_discard
 
 VERBOSE = False
-RUN_COUNT = 5000  # Number of full games to simulate
+RUN_COUNT = 10000  # Number of full games to simulate
 
 if VERBOSE and RUN_COUNT > 1:
     RUN_COUNT = 1
@@ -159,6 +160,9 @@ def main():
     cumulative_player_hand_values = [0] * num_players
     cumulative_score_combo_counts = {}
 
+    # Get start time for time tracking
+    start_time = time.time()
+
     # Use ThreadPoolExecutor to parallelize simulations
     with concurrent.futures.ThreadPoolExecutor() as executor:
         results = [executor.submit(run_game_simulation, num_teams, num_players) for _ in range(RUN_COUNT)]
@@ -184,6 +188,10 @@ def main():
             # Accumulate player hand values
             for i, hand_value in enumerate(player_hand_values_run):
                 cumulative_player_hand_values[i] += hand_value
+
+    # Track simulation time
+    time_taken = time.time() - start_time
+    print("Time elapsed:", round(time_taken, 3), "seconds")
 
     # Print results after all runs
     print("Number of Runs:", RUN_COUNT, "\n")
