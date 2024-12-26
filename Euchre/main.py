@@ -6,7 +6,7 @@ from euchre_tools import Player, Team, EuchreDeck, create_teams, evaluate_hand_w
     get_relative_value, decide_trump, select_best_discard
 
 VERBOSE = False
-RUN_COUNT = 10000  # Number of full games to simulate
+RUN_COUNT = 1000  # Number of full games to simulate
 
 if VERBOSE and RUN_COUNT > 1:
     RUN_COUNT = 1
