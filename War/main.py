@@ -25,7 +25,7 @@ def run_simulation(player_count: int, round_threshold: int):
 
     while min(card_counts) > 0 and rounds < round_threshold:
         # Keep track of the current game state for cycle detection
-        game_state = (tuple(players[0].deck), tuple(players[1].deck))
+        game_state = game_state = (hash(tuple(players[0].deck)), hash(tuple(players[1].deck)))
 
         if game_state in seen_states:
             is_cyclic = True
@@ -34,17 +34,11 @@ def run_simulation(player_count: int, round_threshold: int):
 
         rounds += 1
         # Each player plays a card from the top of their deck
-        winning_card = None
         all_plays = []
         for player in players:
             played_card = player.deck.pop()
             player.card_count -= 1
             all_plays.append(played_card)
-
-            if winning_card is None:
-                winning_card = played_card
-            elif played_card.value > winning_card.value:
-                winning_card = played_card
 
         # Evaluate the winner and which cards they won
         if all_plays[0].value == all_plays[1].value:
@@ -54,6 +48,7 @@ def run_simulation(player_count: int, round_threshold: int):
 
         else:
             # Otherwise, simply list the winner
+            winning_card = max(all_plays, key=lambda card: card.value)
             war_winner = players[all_plays.index(winning_card)]
             won_cards = all_plays
 
@@ -62,10 +57,11 @@ def run_simulation(player_count: int, round_threshold: int):
         war_winner.card_count += len(won_cards)
         player_wins[players.index(war_winner)] += 1
 
-        # Update card counts for tracking
+        # Update card counts
         card_counts = [player.card_count for player in players]
-        if 0 in card_counts:
-            overall_winner = war_winner
+
+        # Decide the winner
+        overall_winner = None if is_cyclic else max(players, key=lambda p: p.card_count)
 
     return is_cyclic, players, dealt_hands, overall_winner, war_count, player_wins, rounds
 
@@ -73,7 +69,7 @@ def run_simulation(player_count: int, round_threshold: int):
 if __name__ == "__main__":
 
     ROUND_THRESHOLD = 10000
-    GAMES_TO_SIMULATE = 1000
+    GAMES_TO_SIMULATE = 100
 
     # Initialize resulting variables
     current_round_count = 0
