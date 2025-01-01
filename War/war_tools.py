@@ -34,42 +34,40 @@ class WarDeck(Deck):
             current_player.card_count += 1
 
 
-def resolve_war(players: list[Player], involved_cards: [list[Card]]) -> tuple[Player, list[Card]]:
+def resolve_war(players: list[Player], involved_cards: list[Card]) -> tuple[Player, list[Card]]:
+    # Accumulate all cards involved in the war
     won_cards = involved_cards
+
     while True:
         played_cards = []
+
         for i, player in enumerate(players):
-            # If player doesn't have enough cards for a war:
+            # Check if the player can continue the war
             if player.card_count < 4:
+                # If not, the other player wins and takes all remaining cards
                 other_player = players[1 - i]
-                # The player that ran out of cards loses, and all of their cards are lost
                 won_cards += player.deck
-                player.card_count = 0
                 player.deck = []
+                player.card_count = 0
+                return other_player, won_cards
 
-                # print(f"{player.name} is unable to complete a war, and loses the game!")
-
-                return other_player, won_cards  # The other player wins the war
-
-            # Each player adds three face-down cards to the pot (if they have enough cards)
+            # Each player places three face-down cards and one face-up card
             for _ in range(3):
                 won_cards.append(player.deck.pop())
                 player.card_count -= 1
 
-            # Then, both players play a card to resolve the war
+            # Play the deciding card for the current war
             played_cards.append(player.deck.pop())
             player.card_count -= 1
 
-        # Now resolve the war by comparing the top cards
+        # Compare the face-up cards
         if played_cards[0] == played_cards[1]:
-            # If there is another tie, initiate another war recursively
-            winner, additional_won_cards = resolve_war(players, played_cards)
-            won_cards += additional_won_cards
+            # If there's a tie, add played cards to the pot and continue the loop
+            won_cards += played_cards
         else:
-            # Otherwise, select the winner based on the cards played
+            # Determine the winner based on the face-up cards
             card_values = [card.value for card in played_cards]
             winner = players[card_values.index(max(card_values))]
             won_cards += played_cards
-            break  # Exit the loop when the war is resolved
+            return winner, won_cards
 
-    return winner, won_cards

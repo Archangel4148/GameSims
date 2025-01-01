@@ -88,7 +88,7 @@ def simulate_games_parallel(games_to_simulate, round_threshold):
 
 if __name__ == "__main__":
     ROUND_THRESHOLD = 10000
-    GAMES_TO_SIMULATE = 10000
+    GAMES_TO_SIMULATE = 100000
 
     print(f"Simulating {GAMES_TO_SIMULATE} games with a threshold of {ROUND_THRESHOLD} rounds...")
     start_time = time.time()
