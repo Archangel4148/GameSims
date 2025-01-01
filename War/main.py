@@ -71,6 +71,10 @@ def run_simulation(player_count: int, round_threshold: int):
 
 
 if __name__ == "__main__":
+
+    ROUND_THRESHOLD = 10000
+    GAMES_TO_SIMULATE = 1000
+
     # Initialize resulting variables
     current_round_count = 0
     current_war_count = 0
@@ -80,26 +84,42 @@ if __name__ == "__main__":
     current_winner = None
     dealt_hands = None
     game_number = 0
-    round_threshold = 10000
 
-    while current_round_count < round_threshold and not is_cyclic:
+    # Counts for game endings
+    game_results = {"win": 0, "cyclic": 0, "rounds": 0}
+
+    for game_index in range(GAMES_TO_SIMULATE):
         is_cyclic, current_players, dealt_hands, current_winner, current_war_count, current_player_wins, current_round_count = run_simulation(
-            2, round_threshold)
+            2, ROUND_THRESHOLD)
         game_number += 1
 
-    if is_cyclic:
-        print(f"\nDetected a cycle after {current_round_count} rounds. This game will never end.")
-    else:
-        print(f"\nGame number {game_number} ended after {current_round_count} rounds")
-    print(f"War Count: {current_war_count}\n")
-    print("=== Player Info ===", end="")
-    for win_count, player, dealt_hand in zip(current_player_wins, current_players, dealt_hands):
-        print(f"\n{player.name}: {win_count} wins")
-        print(f"Dealt Hand: ({len(dealt_hand)}) {dealt_hand}")
-    print("===================")
+        game_results["rounds"] += current_round_count
 
-    if current_round_count == round_threshold:
-        print(
-            f"\nEnding simulation after game exceeded the threshold of {round_threshold} rounds without a winner.")
-    elif not is_cyclic:
-        print(f"\nFinal Winner: {current_winner.name}")
+        if is_cyclic:
+            game_results["cyclic"] += 1
+        else:
+            game_results["win"] += 1
+
+    # if is_cyclic:
+    #     print(f"\nDetected a cycle after {current_round_count} rounds. This game will never end.")
+    # else:
+    #     print(f"\nGame number {game_number} ended after {current_round_count} rounds")
+    # print(f"War Count: {current_war_count}\n")
+    # print("=== Player Info ===", end="")
+    # for win_count, player, dealt_hand in zip(current_player_wins, current_players, dealt_hands):
+    #     print(f"\n{player.name}: {win_count} wins")
+    #     print(f"Dealt Hand: ({len(dealt_hand)}) {dealt_hand}")
+    # print("===================")
+    #
+    # if current_round_count == ROUND_THRESHOLD:
+    #     print(
+    #         f"\nEnding simulation after game exceeded the threshold of {ROUND_THRESHOLD} rounds without a winner.")
+    # elif not is_cyclic:
+    #     print(f"\nFinal Winner: {current_winner.name}")
+
+    print(f"Games Simulated: {GAMES_TO_SIMULATE}")
+    print(f"Win Count: {game_results['win']}")
+    print(f"Cycle Count: {game_results['cyclic']}")
+    print(f"Win Percentage: {game_results['win'] / GAMES_TO_SIMULATE * 100}%")
+    print(f"Cycle Percentage: {game_results['cyclic'] / GAMES_TO_SIMULATE * 100}%")
+    print(f"Average Rounds: {game_results['rounds'] / GAMES_TO_SIMULATE}")
