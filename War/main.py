@@ -1,3 +1,5 @@
+from collections import deque
+
 from War.war_tools import WarDeck, Player, resolve_war
 
 
@@ -16,8 +18,20 @@ def run_simulation(player_count: int, round_threshold: int):
     rounds = 0
     war_count = 0
     player_wins = [0] * len(players)
+    is_cyclic = False
+
+    # Storage for game states to detect cycles
+    seen_states = deque(maxlen=10000)
 
     while min(card_counts) > 0 and rounds < round_threshold:
+        # Keep track of the current game state for cycle detection
+        game_state = (tuple(players[0].deck), tuple(players[1].deck))
+
+        if game_state in seen_states:
+            is_cyclic = True
+            return is_cyclic, players, dealt_hands, None, war_count, player_wins, rounds
+        seen_states.append(game_state)
+
         rounds += 1
         # Each player plays a card from the top of their deck
         winning_card = None
@@ -53,13 +67,14 @@ def run_simulation(player_count: int, round_threshold: int):
         if 0 in card_counts:
             overall_winner = war_winner
 
-    return players, dealt_hands, overall_winner, war_count, player_wins, rounds
+    return is_cyclic, players, dealt_hands, overall_winner, war_count, player_wins, rounds
 
 
 if __name__ == "__main__":
     # Initialize resulting variables
     current_round_count = 0
     current_war_count = 0
+    is_cyclic = None
     current_player_wins = None
     current_players = None
     current_winner = None
@@ -67,12 +82,15 @@ if __name__ == "__main__":
     game_number = 0
     round_threshold = 10000
 
-    while current_round_count < round_threshold:
-        current_players, dealt_hands, current_winner, current_war_count, current_player_wins, current_round_count = run_simulation(
+    while current_round_count < round_threshold and not is_cyclic:
+        is_cyclic, current_players, dealt_hands, current_winner, current_war_count, current_player_wins, current_round_count = run_simulation(
             2, round_threshold)
         game_number += 1
 
-    print(f"\nGame number {game_number} ended after {current_round_count} rounds")
+    if is_cyclic:
+        print(f"\nDetected a cycle after {current_round_count} rounds. This game will never end.")
+    else:
+        print(f"\nGame number {game_number} ended after {current_round_count} rounds")
     print(f"War Count: {current_war_count}\n")
     print("=== Player Info ===", end="")
     for win_count, player, dealt_hand in zip(current_player_wins, current_players, dealt_hands):
@@ -83,5 +101,5 @@ if __name__ == "__main__":
     if current_round_count == round_threshold:
         print(
             f"\nEnding simulation after game exceeded the threshold of {round_threshold} rounds without a winner.")
-    else:
+    elif not is_cyclic:
         print(f"\nFinal Winner: {current_winner.name}")
