@@ -9,6 +9,7 @@ class Player:
     name: str = "NO_NAME"
     hand: list[Card] | None = None
     hand_values: list[int] | None = None
+    total_value: int = 0
 
     def __post_init__(self):
         if self.hand is None:
@@ -25,16 +26,26 @@ class BlackjackDeck(Deck):
         super().__init__()
 
     def deal_hands(self, players: list[Player]):
-        for _ in range(2):
+        for i in range(2):
             for player in players:
                 drawn_card = self.draw_card()
                 player.hand.append(drawn_card)
                 player.hand_values.append(get_card_value(drawn_card))
+                player.total_value = sum(player.hand_values)
+                # If a player is dealt two Aces, treat one of them as a 1
+                if player.total_value == 22:
+                    player.hand_values[i] = 1
+                    player.total_value -= 10
 
     def hit(self, player: Player):
         hit_card = self.draw_card()
         player.hand.append(hit_card)
         player.hand_values.append(get_card_value(hit_card))
+        player.total_value = sum(player.hand_values)
+        # Handle Aces ("soft hands")
+        if player.total_value > 21 and 11 in player.hand_values:
+            player.hand_values[player.hand_values.index(11)] = 1
+            player.total_value = sum(player.hand_values)
 
 
 def get_card_value(card: Card) -> int:
@@ -45,3 +56,41 @@ def get_card_value(card: Card) -> int:
         return 11
     else:
         return 10
+
+
+def decide_play(hand_values: list[int], dealer_upcard: int, is_dealer: bool = False) -> str:
+    hand_total = sum(hand_values)  # Sum of the player's hand cards
+
+    if not is_dealer:
+        # Player's decision-making
+        if hand_total <= 11:
+            # Player will always hit if their total is 11 or less (no risk)
+            return "hit"
+        elif hand_total >= 17:
+            # Player will stand on 17 or more (safe enough not to bust)
+            return "stand"
+        else:
+            # Player will hit if the dealer's upcard is 7 or higher, otherwise stand
+            if dealer_upcard >= 7:
+                return "hit"
+            else:
+                return "stand"
+    else:
+        # Dealer's decision-making (house rules)
+        if hand_total <= 16:
+            return "hit"
+        else:
+            return "stand"
+
+
+def evaluate_result(player: Player) -> int:
+    total = player.total_value
+    # First, handle aces (set them to value 1 if the player is over)
+    if total > 21 and 11 in player.hand_values:
+        total -= 10
+    # If a player busts, their hand is worthless
+    if total > 21:
+        return 0
+    else:
+        # Otherwise, they score their hand value
+        return total
