@@ -66,6 +66,8 @@ def decide_play(hand_values: list[int], dealer_upcard: int, is_dealer: bool = Fa
         if hand_total <= 11:
             # Player will always hit if their total is 11 or less (no risk)
             return "hit"
+        elif hand_total > 21:
+            return "bust"
         elif hand_total >= 17:
             # Player will stand on 17 or more (safe enough not to bust)
             return "stand"
@@ -81,16 +83,3 @@ def decide_play(hand_values: list[int], dealer_upcard: int, is_dealer: bool = Fa
             return "hit"
         else:
             return "stand"
-
-
-def evaluate_result(player: Player) -> int:
-    total = player.total_value
-    # First, handle aces (set them to value 1 if the player is over)
-    if total > 21 and 11 in player.hand_values:
-        total -= 10
-    # If a player busts, their hand is worthless
-    if total > 21:
-        return 0
-    else:
-        # Otherwise, they score their hand value
-        return total

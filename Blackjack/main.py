@@ -1,4 +1,4 @@
-from Blackjack.blackjack_tools import Player, BlackjackDeck, decide_play, evaluate_result
+from Blackjack.blackjack_tools import Player, BlackjackDeck, decide_play
 
 PLAYER_COUNT = 4
 
@@ -23,7 +23,11 @@ def main():
                 print(f"{player.name} hits -> {str(player.hand[-1])} ({player.total_value})")
             elif play == "stand":
                 print(f"{player.name} stands with {player.total_value}")
-                score = evaluate_result(player)
+                score = player.total_value
+                break
+            elif play == "bust":
+                print(f"{player.name} busts, with a total of {player.total_value}")
+                score = 0
                 break
         print()
 
