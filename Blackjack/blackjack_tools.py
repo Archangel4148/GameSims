@@ -1,5 +1,4 @@
 import dataclasses
-import random
 
 from playing_card_tools import Card, Deck
 
@@ -71,15 +70,25 @@ def decide_play(hand_values: list[int], dealer_upcard: int, is_dealer: bool = Fa
         elif hand_total >= 17:
             # Player will stand on 17 or more (safe enough not to bust)
             return "stand"
-        else:
-            # Player will hit if the dealer's upcard is 7 or higher, otherwise stand
+        elif hand_total == 12:
+            # Special case: Player stands on 12 if the dealer's upcard is 4, 5, or 6
+            if dealer_upcard in [4, 5, 6]:
+                return "stand"
+            else:
+                return "hit"
+        elif 13 <= hand_total <= 16:
+            # Player will hit on 13-16 if the dealer's upcard is 7 or higher, otherwise stand
             if dealer_upcard >= 7:
                 return "hit"
             else:
                 return "stand"
+        else:
+            return "stand"  # Catch-all for any other unexpected scenarios
     else:
         # Dealer's decision-making (house rules)
         if hand_total <= 16:
             return "hit"
+        elif hand_total > 21:
+            return "bust"
         else:
             return "stand"
