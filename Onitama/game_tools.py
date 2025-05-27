@@ -184,8 +184,8 @@ def is_victory(board_state: BoardState) -> tuple[bool, str]:
     if "M" not in board_state.mailbox_board:
         return True, "Player 1 wins by capture!"
     # Temple wins
-    p1_temple = LOGICAL_TO_MAILBOX[2]
-    p2_temple = LOGICAL_TO_MAILBOX[22]
+    p1_temple = LOGICAL_TO_MAILBOX[22]
+    p2_temple = LOGICAL_TO_MAILBOX[2]
     if board_state.mailbox_board[p1_temple] == "M":
         return True, "Player 2 wins by occupation!"
     if board_state.mailbox_board[p2_temple] == "m":
