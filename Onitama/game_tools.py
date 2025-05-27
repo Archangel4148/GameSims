@@ -1,4 +1,5 @@
 import dataclasses
+import random
 
 # Map all possible cards to their move offsets
 CARD_MOVES = {
@@ -20,6 +21,8 @@ CARD_MOVES = {
     "EE": ((-1, 1), (-1, -1), (1, 0)),
 }
 
+STARTING_BOARD = "SSMSS...............ssmss"
+
 # Create a mapping from nice indices to mailbox indices
 MAILBOX_WIDTH = 9  # Using a wide mailbox to catch long jumps (tiger, crab, etc.)
 MAILBOX_SIZE = MAILBOX_WIDTH * MAILBOX_WIDTH
@@ -28,17 +31,35 @@ LOGICAL_TO_MAILBOX = [(r + 2) * MAILBOX_WIDTH + (c + 2) for r in range(5) for c 
 
 @dataclasses.dataclass
 class BoardState:
-    mailbox_board: list[str | None]
-    is_p1_turn: bool
-    p1_cards: list[str]
-    p2_cards: list[str]
-    center_card: str
+    mailbox_board: list[str | None] = None
+    is_p1_turn: bool = None
+    p1_cards: list[str] = None
+    p2_cards: list[str] = None
+    center_card: str = None
+
+    def __post_init__(self):
+        # Generate a standard starting board
+        if self.mailbox_board is None:
+            self.mailbox_board = [None] * MAILBOX_SIZE
+            flat_board = list(STARTING_BOARD)
+            for i, char in enumerate(flat_board):
+                self.mailbox_board[LOGICAL_TO_MAILBOX[i]] = char
+
+        # Deal cards randomly
+        if not self.p1_cards or self.p2_cards or self.center_card:
+            game_deck = random.sample(list(CARD_MOVES.keys()), 5)
+            self.p1_cards = game_deck[:2]
+            self.p2_cards = game_deck[2:4]
+            self.center_card = game_deck[4]
+
+            # Select a random starting player
+            self.is_p1_turn = random.choice((True, False))
 
     def __str__(self) -> str:
         output = []
 
         # Display the 5x5 board extracted from the mailbox
-        for row in reversed(range(5)):
+        for row in range(5):
             line = []
             for col in range(5):
                 mailbox_index = LOGICAL_TO_MAILBOX[row * 5 + col]
@@ -95,8 +116,6 @@ def apply_move(board_state: BoardState, move: tuple[int, int, str]) -> BoardStat
     playing_hand = board_state.p1_cards if board_state.is_p1_turn else board_state.p2_cards
     assert card in playing_hand, f"Cannot make move; No such card, \'{card}\' in hand"
 
-    print(f"{from_idx}, {to_idx} is a valid move!")
-
     # Update card positions
     turn_player_cards = board_state.p1_cards if board_state.is_p1_turn else board_state.p2_cards
 
@@ -127,7 +146,7 @@ def get_valid_targets_by_card(board_state: BoardState, start_idx: int, card: str
         if not is_p1:
             dx, dy = -dx, -dy
 
-        to_idx = start_idx + dx + dy * MAILBOX_WIDTH
+        to_idx = start_idx + dx + -dy * MAILBOX_WIDTH
 
         # Check if resulting index is on the board
         if 0 < to_idx < MAILBOX_SIZE:
@@ -155,22 +174,19 @@ def get_valid_moves_for_piece(board_state: BoardState, start_idx) -> list[tuple[
 
     return valid_moves
 
+
 def get_all_valid_moves(board_state: BoardState) -> list[tuple[int, int, str]]:
     valid_moves = []
     for i in range(MAILBOX_SIZE):
         valid_moves += get_valid_moves_for_piece(board_state, i)
     return valid_moves
 
+
 if __name__ == '__main__':
-    # starting_sen = "SSMSS/5/5/5/ssmss/TIMOCRBORO0"
-    starting_sen = "5/5/2s2/5/5/TIMOCRBORO0"
-
-    # Create the starting board
-    board = parse_sen(starting_sen)
-
+    board = BoardState()
     print(board)
 
     # Demonstrate all valid moves
     for move in get_all_valid_moves(board):
-        print("===", move[2], "===")
+        print("\n\n===", move[2], "===")
         print(apply_move(board, move))
