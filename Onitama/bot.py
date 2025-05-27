@@ -1,9 +1,12 @@
 import random
 import socket
-from Onitama.game_tools import parse_sen, to_sen, get_all_valid_moves, LOGICAL_TO_MAILBOX
+
+from Onitama.bot_tools import get_all_valid_moves
+from Onitama.game_tools import parse_sen, LOGICAL_TO_MAILBOX
 
 HOST = 'localhost'
 PORT = 65432
+
 
 def choose_move(board_state, role):
     """
@@ -14,11 +17,13 @@ def choose_move(board_state, role):
     move = random.choice(valid_moves)
     return move
 
+
 def logical_index(mailbox_index):
     try:
         return LOGICAL_TO_MAILBOX.index(mailbox_index)
     except ValueError:
         return -1
+
 
 def main():
     role = None
@@ -57,6 +62,7 @@ def main():
                     print("[GAME OVER]", msg)
                     return
 
+
 def send_move(sock, from_idx, to_idx, card):
     logical_from = logical_index(from_idx)
     logical_to = logical_index(to_idx)
@@ -67,6 +73,7 @@ def send_move(sock, from_idx, to_idx, card):
         sock.sendall(msg.encode())
     except Exception as e:
         print(f"[SEND ERROR] {e}")
+
 
 if __name__ == "__main__":
     main()

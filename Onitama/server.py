@@ -1,5 +1,7 @@
 import socket
 import threading
+import time
+
 from Onitama.game_tools import BoardState, to_sen, parse_sen, apply_move, is_victory, LOGICAL_TO_MAILBOX
 
 HOST = 'localhost'
