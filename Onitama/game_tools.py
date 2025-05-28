@@ -28,6 +28,12 @@ MAILBOX_WIDTH = 9  # Using a wide mailbox to catch long jumps (tiger, crab, etc.
 MAILBOX_SIZE = MAILBOX_WIDTH * MAILBOX_WIDTH
 LOGICAL_TO_MAILBOX = [(r + 2) * MAILBOX_WIDTH + (c + 2) for r in range(5) for c in range(5)]
 
+PLAYABLE_INDICES = [
+    row * 9 + col
+    for row in range(2, 7)
+    for col in range(2, 7)
+]
+
 
 @dataclasses.dataclass
 class BoardState:
@@ -217,6 +223,12 @@ def get_valid_targets_by_card(board_state: BoardState, start_idx: int, card: str
                 # Valid move
                 destinations.append(to_idx)
     return destinations
+
+
+def mailbox_to_coord(index: int) -> tuple[int, int]:
+    row = index // MAILBOX_WIDTH - 2
+    col = index % MAILBOX_WIDTH - 2
+    return row, col
 
 
 if __name__ == '__main__':

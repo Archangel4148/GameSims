@@ -1,7 +1,7 @@
 import random
 import socket
 
-from Onitama.bot_tools import get_all_valid_moves
+from Onitama.bot_tools import get_all_valid_moves, depth_limited_alpha_beta_id_minimax
 from Onitama.game_tools import parse_sen, LOGICAL_TO_MAILBOX
 
 HOST = 'localhost'
@@ -13,8 +13,7 @@ def choose_move(board_state, role):
     Choose and return a move as a tuple: (from_idx, to_idx, card)
     This will be converted and sent to the server as: "<logical_from> <logical_to> <card>"
     """
-    valid_moves = get_all_valid_moves(board_state)
-    move = random.choice(valid_moves)
+    move = depth_limited_alpha_beta_id_minimax(board_state)
     return move
 
 
