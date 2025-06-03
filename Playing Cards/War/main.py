@@ -2,7 +2,7 @@ import time
 from collections import deque
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from War.war_tools import WarDeck, Player, resolve_war
+from war_tools import WarDeck, Player, resolve_war
 
 
 def run_simulation(player_count: int, round_threshold: int, swap_order: bool = False):

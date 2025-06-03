@@ -1,4 +1,4 @@
-from Blackjack.blackjack_tools import Player, BlackjackDeck, decide_play
+from blackjack_tools import Player, BlackjackDeck, decide_play
 
 PLAYER_COUNT = 4
 VERBOSE = True

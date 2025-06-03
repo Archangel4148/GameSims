@@ -1,6 +1,6 @@
 from random import randint
 
-from Golf.golf_tools import Player, GolfDeck
+from golf_tools import Player, GolfDeck
 
 if __name__ == '__main__':
     # Create players
